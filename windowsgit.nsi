@@ -6,8 +6,9 @@
 
 !define COPSSH_PACKAGE "Copssh_4.1.1_Installer.exe"
 !define COPSSH_UNINSTALL "uninstall_Copssh.exe"
+!define COPSSHCP_UNINSTALL "uninstall_ICW_COPSSHCP.exe"
 !define GIT_PACKAGE "ICW_Git_1.0.0_installer.exe"
-!define GIT_UNINSTALL "uninstall_Git.exe"
+!define GIT_UNINSTALL "uninstall_ICW_Git.exe"
 
 SetCompressor /SOLID LZMA
 InstallDir $PROGRAMFILES\ICW
@@ -19,7 +20,7 @@ VIAddVersionKey  "ProductName" "${NAME}"
 VIAddVersionKey  "CompanyName" "ITeF!x Consulting"
 VIAddVersionKey  "FileDescription" "${NAME}"
 VIAddVersionKey  "FileVersion" "${VERSION}"
-VIProductVersion "${VERSION}.0"
+VIProductVersion "${VERSION}.1000"
 
 !include MUI.nsh
 ;!define MUI_ICON "copssh.ico"
@@ -135,8 +136,16 @@ Section "Uninstall"
 ;	IfSilent 0 +2
 	StrCpy $0 "/S"
 	
+	DetailPrint "Uninstalling Git"
 	nsExec::Exec '"$INSTDIR\${GIT_UNINSTALL}" $0'
+	
+	DetailPrint "Uninstalling Copssh"
 	nsExec::Exec '"$INSTDIR\${COPSSH_UNINSTALL}" $0'
+	nsExec::Exec '"$INSTDIR\${COPSSHCP_UNINSTALL}" $0'
+	
+	DetailPrint "Remove accounts"
+	nsExec::Exec "net user SvcCopssh /DELETE"
+	nsExec::Exec "net user Git /DELETE"	
 	
 	RMDir $INSTDIR ; if empty
 	
