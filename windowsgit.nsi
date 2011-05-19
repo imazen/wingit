@@ -20,7 +20,7 @@ VIAddVersionKey  "ProductName" "${NAME}"
 VIAddVersionKey  "CompanyName" "ITeF!x Consulting"
 VIAddVersionKey  "FileDescription" "${NAME}"
 VIAddVersionKey  "FileVersion" "${VERSION}"
-VIProductVersion "${VERSION}.1000"
+VIProductVersion "${VERSION}.1001"
 
 !include MUI.nsh
 ;!define MUI_ICON "copssh.ico"
@@ -105,6 +105,8 @@ Section "WindowsGit"
 	
 	DetailPrint "Installing Git binaries"
 	nsExec::Exec '"$PLUGINSDIR\${GIT_PACKAGE}" $0'
+	SetOutPath "$INSTDIR\home\git"
+	File ".gitconfig"
 	
 	; Set installation Directory
 	ReadRegStr $INSTDIR HKLM ${REGROOT} "InstallDirectory"
