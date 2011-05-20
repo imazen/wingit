@@ -3,6 +3,7 @@
 !define NAME "WindowsGit"
 !define UNINSTPROG "uninstall_${NAME}.exe"
 !define DEF_SERVICE_ACCOUNT "SvcCOPSSH"
+!define SSHD_PORT 22
 
 !define COPSSH_PACKAGE "Copssh_4.1.1_Installer.exe"
 !define COPSSH_UNINSTALL "uninstall_Copssh.exe"
@@ -20,11 +21,13 @@ VIAddVersionKey  "ProductName" "${NAME}"
 VIAddVersionKey  "CompanyName" "ITeF!x Consulting"
 VIAddVersionKey  "FileDescription" "${NAME}"
 VIAddVersionKey  "FileVersion" "${VERSION}"
-VIProductVersion "${VERSION}.1001"
+VIProductVersion "${VERSION}.1002"
 
 !include MUI.nsh
-;!define MUI_ICON "copssh.ico"
-;!define MUI_UNICON "copssh-uninstall.ico"
+!define MUI_ICON "windowsgit-logo.ico"
+!define MUI_UNICON "windowsgit-logo.ico"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "windowsgit-logo-164x314.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "windowsgit-logo-164x314.bmp"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "LICENSE.TXT"
@@ -87,14 +90,13 @@ FunctionEnd
 # Install section
 Section "WindowsGit"
 
-	StrCpy $0 ""
-;	IfSilent 0 +2
-	StrCpy $0 "/S"
-	
 	WriteRegStr HKLM ${REGROOT} "InstallDirectory" "$INSTDIR"
 	
-	DetailPrint "Installing Copssh, please be patient (Service account $svcuser, password $svcpassword) ..."
-	nsExec::Exec '"$PLUGINSDIR\${COPSSH_PACKAGE}" $0 /u=$svcuser /p=$svcpassword'
+	DetailPrint "Installing Copssh, please wait ... (Service account $svcuser, password $svcpassword) ..."
+	nsExec::Exec '"$PLUGINSDIR\${COPSSH_PACKAGE}" /S /u=$svcuser /p=$svcpassword'
+	
+	; Add the port 22/TCP to the firewall exception list - All Networks - All IP Versions - Enabled
+	SimpleFC::AddPort ${SSHD_PORT} "Opensshd" 6 0 2 "" 1
 	
 	# Create git user with a default password
 	nsExec::ExecToStack "$PLUGINSDIR\pwdgen.exe"
@@ -103,8 +105,8 @@ Section "WindowsGit"
 	DetailPrint "Creating user 'git', password $0"
 	nsExec::ExecToLog 'net user git $0 /ADD /COMMENT:"Git user"'
 	
-	DetailPrint "Installing Git binaries"
-	nsExec::Exec '"$PLUGINSDIR\${GIT_PACKAGE}" $0'
+	DetailPrint "Installing Git binaries, please wait ..."
+	nsExec::Exec '"$PLUGINSDIR\${GIT_PACKAGE}" /S'
 	SetOutPath "$INSTDIR\home\git"
 	File ".gitconfig"
 	
@@ -144,6 +146,10 @@ Section "Uninstall"
 	DetailPrint "Uninstalling Copssh"
 	nsExec::Exec '"$INSTDIR\${COPSSH_UNINSTALL}" $0'
 	nsExec::Exec '"$INSTDIR\${COPSSHCP_UNINSTALL}" $0'
+	
+	DetailPrint "Removing Firewall exception for port ${SSHD_PORT}"
+	; 6 - TCP
+	SimpleFC::RemovePort ${SSHD_PORT} 6
 	
 	DetailPrint "Remove accounts"
 	nsExec::Exec "net user SvcCopssh /DELETE"
