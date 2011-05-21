@@ -1,0 +1,4 @@
+Dependencies
+
+Py2App
+http://svn.pythonmac.org/py2app/py2app/trunk/doc/index.html#installing-with-easy-install
