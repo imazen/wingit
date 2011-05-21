@@ -6,19 +6,20 @@ import pyperclip
 
 def copy(data):
 	if os.name == 'nt':
-	    import ctypes
-	    winSetClipboard(data)
+		import ctypes
+		winSetClipboard(data)
 	else:
-	    macSetClipboard(data)
+		macSetClipboard(data)
 
 def getKeygenPath():
 	if not os.name == 'nt': return 'ssh-keygen'
 	
 	for s in ["ProgramFiles", "ProgramFiles(x86)","ProgramW6432"]:
-		path = os.path.join(os.environ[s], "/Git/bin/ssh-keygen.exe")
+		if s in os.environ: path = os.path.join(os.environ[s], "Git\\bin\\ssh-keygen.exe")
+		print "Looking for " + path
 		if (os.path.isfile(path)): return path;
-		print ("Git was not found on your system. Google 'msysgit', download, and install Git for Windows, then re-run this program")
-		return None
+	print ("Git was not found on your system. Google 'msysgit', download, and install Git for Windows, then re-run this program")
+	return None
 
 def createKey(pubkey):
 	keygen = getKeygenPath()
@@ -54,7 +55,7 @@ def createKey(pubkey):
 def showKey(fname):
 	print ('Key file found.')
 	with open(fname, 'r') as f:
-	 	contents = f.read()
+		contents = f.read()
 	print ('Key data (copied to your clipboard):')
 	print
 	print (contents)
