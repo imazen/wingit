@@ -1,4 +1,4 @@
-!define VERSION "1.0.0"
+!define VERSION "1.1.0"
 !define REGROOT "Software\Itefix\ICW"
 !define NAME "WindowsGit"
 !define UNINSTPROG "uninstall_${NAME}.exe"
@@ -8,8 +8,10 @@
 !define COPSSH_PACKAGE "Copssh_4.1.1_Installer.exe"
 !define COPSSH_UNINSTALL "uninstall_Copssh.exe"
 !define COPSSHCP_UNINSTALL "uninstall_ICW_COPSSHCP.exe"
-!define GIT_PACKAGE "ICW_Git_1.0.0_installer.exe"
+!define GIT_PACKAGE "ICW_Git_1.1.0_installer.exe"
 !define GIT_UNINSTALL "uninstall_ICW_Git.exe"
+!define PERL_PACKAGE "ICW_Perl_1.0.0_installer.exe"
+!define PERL_UNINSTALL "uninstall_ICW_Perl.exe"
 
 SetCompressor /SOLID LZMA
 InstallDir $PROGRAMFILES\ICW
@@ -21,7 +23,7 @@ VIAddVersionKey  "ProductName" "${NAME}"
 VIAddVersionKey  "CompanyName" "ITeF!x Consulting"
 VIAddVersionKey  "FileDescription" "${NAME}"
 VIAddVersionKey  "FileVersion" "${VERSION}"
-VIProductVersion "${VERSION}.1002"
+VIProductVersion "${VERSION}.0"
 
 !include MUI.nsh
 !define MUI_ICON "windowsgit-logo.ico"
@@ -61,6 +63,7 @@ Function .onInit
 
 	InitPluginsDir
 	File /oname=$PLUGINSDIR\${COPSSH_PACKAGE} ${COPSSH_PACKAGE}
+	File /oname=$PLUGINSDIR\${PERL_PACKAGE} ${PERL_PACKAGE}
 	File /oname=$PLUGINSDIR\${GIT_PACKAGE} ${GIT_PACKAGE}
 	File /oname=$PLUGINSDIR\pwdgen.exe pwdgen.exe
 	
@@ -97,6 +100,10 @@ Section "WindowsGit"
 	
 	; Add the port 22/TCP to the firewall exception list - All Networks - All IP Versions - Enabled
 	SimpleFC::AddPort ${SSHD_PORT} "Opensshd" 6 0 2 "" 1
+
+	# Installing perl package
+	DetailPrint "Installing Perl package, please wait ..."
+	nsExec::Exec '"$PLUGINSDIR\${PERL_PACKAGE}" /S'
 	
 	# Create git user with a default password
 	nsExec::ExecToStack "$PLUGINSDIR\pwdgen.exe"
@@ -105,7 +112,7 @@ Section "WindowsGit"
 	DetailPrint "Creating user 'git', password $0"
 	nsExec::ExecToLog 'net user git $0 /ADD /COMMENT:"Git user"'
 	
-	DetailPrint "Installing Git binaries, please wait ..."
+	DetailPrint "Installing Git package, please wait ..."
 	nsExec::Exec '"$PLUGINSDIR\${GIT_PACKAGE}" /S'
 	SetOutPath "$INSTDIR\home\git"
 	File ".gitconfig"
